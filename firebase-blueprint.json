@@ -1,0 +1,218 @@
+{
+  "entities": {
+    "DubbingProject": {
+      "title": "DubbingProject",
+      "description": "An English-to-Hindi AI movie dubbing project with default voice style and modulation preferences.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Project title"
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "description": "Source audio language (English)"
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "Target dubbing language (Hindi)"
+        },
+        "videoFileName": {
+          "type": "string",
+          "description": "Display name of imported movie/video clip"
+        },
+        "videoUriString": {
+          "type": "string",
+          "description": "Local URI string reference of imported media"
+        },
+        "durationMs": {
+          "type": "integer",
+          "description": "Clip duration in milliseconds"
+        },
+        "defaultGender": {
+          "type": "string",
+          "enum": ["MALE", "FEMALE", "NEUTRAL"],
+          "description": "Default dubbing voice gender"
+        },
+        "defaultAgeGroup": {
+          "type": "string",
+          "enum": ["CHILD", "YOUNG_ADULT", "ADULT", "ELDER"],
+          "description": "Default dubbing voice age group"
+        },
+        "defaultEffect": {
+          "type": "string",
+          "enum": ["NATURAL", "HERO_DEEP", "SWEET_BRIGHT", "VILLAIN_GRAVEL", "ROBOT_SCIFI", "THEATER_ECHO", "CARTOON_HIGH"],
+          "description": "Default voice changer modulation preset"
+        },
+        "defaultPitch": {
+          "type": "number",
+          "description": "Default pitch multiplier"
+        },
+        "defaultSpeed": {
+          "type": "number",
+          "description": "Default speech rate multiplier"
+        },
+        "matchOriginalEmotion": {
+          "type": "boolean",
+          "description": "Whether to match original actor emotional tone"
+        },
+        "originalAudioVolume": {
+          "type": "number",
+          "description": "Background original audio ducking level (0.0 to 1.0)"
+        },
+        "lineCount": {
+          "type": "integer",
+          "description": "Number of dialogue lines in project"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "sourceLanguage",
+        "targetLanguage",
+        "videoFileName",
+        "videoUriString",
+        "durationMs",
+        "defaultGender",
+        "defaultAgeGroup",
+        "defaultEffect",
+        "defaultPitch",
+        "defaultSpeed",
+        "matchOriginalEmotion",
+        "originalAudioVolume",
+        "lineCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DubLine": {
+      "title": "DubLine",
+      "description": "A single time-aligned English dialogue segment dubbed into Hindi with per-line voice style and emotion matching.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID"
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Parent DubbingProject document ID"
+        },
+        "orderIndex": {
+          "type": "integer",
+          "description": "Sequential line index"
+        },
+        "speakerName": {
+          "type": "string",
+          "description": "Character or speaker label"
+        },
+        "startMs": {
+          "type": "integer",
+          "description": "Segment start timestamp in milliseconds"
+        },
+        "endMs": {
+          "type": "integer",
+          "description": "Segment end timestamp in milliseconds"
+        },
+        "englishText": {
+          "type": "string",
+          "description": "Original English dialogue"
+        },
+        "hindiText": {
+          "type": "string",
+          "description": "Translated Hindi dubbing dialogue"
+        },
+        "emotion": {
+          "type": "string",
+          "enum": ["NEUTRAL", "ANGRY", "HAPPY", "SAD", "SUSPENSE", "ROMANTIC", "EXCITED", "WHISPER"],
+          "description": "Detected emotional tone of original actor"
+        },
+        "emotionIntensity": {
+          "type": "number",
+          "description": "Emotional intensity score from 0.0 to 1.0"
+        },
+        "voiceGender": {
+          "type": "string",
+          "enum": ["MALE", "FEMALE", "NEUTRAL"],
+          "description": "Selected Hindi dub voice gender"
+        },
+        "ageGroup": {
+          "type": "string",
+          "enum": ["CHILD", "YOUNG_ADULT", "ADULT", "ELDER"],
+          "description": "Selected Hindi dub voice age group"
+        },
+        "voiceEffect": {
+          "type": "string",
+          "enum": ["NATURAL", "HERO_DEEP", "SWEET_BRIGHT", "VILLAIN_GRAVEL", "ROBOT_SCIFI", "THEATER_ECHO", "CARTOON_HIGH"],
+          "description": "Voice changer modulation preset"
+        },
+        "pitchMultiplier": {
+          "type": "number",
+          "description": "Voice pitch shift multiplier"
+        },
+        "speedMultiplier": {
+          "type": "number",
+          "description": "Voice tempo/speed multiplier"
+        },
+        "matchOriginalEmotion": {
+          "type": "boolean",
+          "description": "Whether to adapt voice modulation to match original emotion"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "userId",
+        "projectId",
+        "orderIndex",
+        "speakerName",
+        "startMs",
+        "endMs",
+        "englishText",
+        "hindiText",
+        "emotion",
+        "emotionIntensity",
+        "voiceGender",
+        "ageGroup",
+        "voiceEffect",
+        "pitchMultiplier",
+        "speedMultiplier",
+        "matchOriginalEmotion",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/DubbingProject" },
+      "description": "User-owned movie dubbing projects"
+    },
+    "/users/{userId}/projects/{projectId}/lines/{lineId}": {
+      "schema": { "$ref": "#/entities/DubLine" },
+      "description": "Time-aligned Hindi dubbing dialogue lines belonging to a project"
+    }
+  }
+}

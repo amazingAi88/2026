@@ -1,0 +1,222 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidGender(val) {
+      return val is string && val in ['MALE', 'FEMALE', 'NEUTRAL'];
+    }
+
+    function isValidAgeGroup(val) {
+      return val is string && val in ['CHILD', 'YOUNG_ADULT', 'ADULT', 'ELDER'];
+    }
+
+    function isValidVoiceEffect(val) {
+      return val is string && val in [
+        'NATURAL',
+        'HERO_DEEP',
+        'SWEET_BRIGHT',
+        'VILLAIN_GRAVEL',
+        'ROBOT_SCIFI',
+        'THEATER_ECHO',
+        'CARTOON_HIGH'
+      ];
+    }
+
+    function isValidEmotion(val) {
+      return val is string && val in [
+        'NEUTRAL',
+        'ANGRY',
+        'HAPPY',
+        'SAD',
+        'SUSPENSE',
+        'ROMANTIC',
+        'EXCITED',
+        'WHISPER'
+      ];
+    }
+
+    function isNumberInRange(val, minVal, maxVal) {
+      return (val is float || val is int) && val >= minVal && val <= maxVal;
+    }
+
+    function isValidDubbingProject(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.userId.size() <= 128 &&
+             data.title is string &&
+             data.title.size() >= 1 &&
+             data.title.size() <= 120 &&
+             data.sourceLanguage is string &&
+             data.sourceLanguage.size() >= 1 &&
+             data.sourceLanguage.size() <= 40 &&
+             data.targetLanguage is string &&
+             data.targetLanguage.size() >= 1 &&
+             data.targetLanguage.size() <= 40 &&
+             data.videoFileName is string &&
+             data.videoFileName.size() <= 200 &&
+             data.videoUriString is string &&
+             data.videoUriString.size() <= 1000 &&
+             data.durationMs is int &&
+             data.durationMs >= 0 &&
+             data.durationMs <= 86400000 &&
+             isValidGender(data.defaultGender) &&
+             isValidAgeGroup(data.defaultAgeGroup) &&
+             isValidVoiceEffect(data.defaultEffect) &&
+             isNumberInRange(data.defaultPitch, 0.4, 2.0) &&
+             isNumberInRange(data.defaultSpeed, 0.5, 2.0) &&
+             data.matchOriginalEmotion is bool &&
+             isNumberInRange(data.originalAudioVolume, 0.0, 1.0) &&
+             data.lineCount is int &&
+             data.lineCount >= 0 &&
+             data.lineCount <= 500 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidDubLine(data, userId, projectId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.userId.size() <= 128 &&
+             data.projectId is string &&
+             data.projectId == projectId &&
+             isValidId(data.projectId) &&
+             data.orderIndex is int &&
+             data.orderIndex >= 0 &&
+             data.orderIndex <= 500 &&
+             data.speakerName is string &&
+             data.speakerName.size() >= 1 &&
+             data.speakerName.size() <= 60 &&
+             data.startMs is int &&
+             data.startMs >= 0 &&
+             data.startMs <= 86400000 &&
+             data.endMs is int &&
+             data.endMs >= 0 &&
+             data.endMs <= 86400000 &&
+             data.englishText is string &&
+             data.englishText.size() <= 1000 &&
+             data.hindiText is string &&
+             data.hindiText.size() >= 1 &&
+             data.hindiText.size() <= 1000 &&
+             isValidEmotion(data.emotion) &&
+             isNumberInRange(data.emotionIntensity, 0.0, 1.0) &&
+             isValidGender(data.voiceGender) &&
+             isValidAgeGroup(data.ageGroup) &&
+             isValidVoiceEffect(data.voiceEffect) &&
+             isNumberInRange(data.pitchMultiplier, 0.4, 2.0) &&
+             isNumberInRange(data.speedMultiplier, 0.5, 2.0) &&
+             data.matchOriginalEmotion is bool &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/projects/{projectId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(projectId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(projectId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'title', 'sourceLanguage', 'targetLanguage',
+                         'videoFileName', 'videoUriString', 'durationMs',
+                         'defaultGender', 'defaultAgeGroup', 'defaultEffect',
+                         'defaultPitch', 'defaultSpeed', 'matchOriginalEmotion',
+                         'originalAudioVolume', 'lineCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'title', 'sourceLanguage', 'targetLanguage',
+                         'videoFileName', 'videoUriString', 'durationMs',
+                         'defaultGender', 'defaultAgeGroup', 'defaultEffect',
+                         'defaultPitch', 'defaultSpeed', 'matchOriginalEmotion',
+                         'originalAudioVolume', 'lineCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidDubbingProject(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(projectId) &&
+                       isValidDubbingProject(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'videoFileName', 'videoUriString', 'durationMs',
+                         'defaultGender', 'defaultAgeGroup', 'defaultEffect',
+                         'defaultPitch', 'defaultSpeed', 'matchOriginalEmotion',
+                         'originalAudioVolume', 'lineCount', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(projectId);
+
+      match /lines/{lineId} {
+        allow list: if isOwner(userId) && isValidId(projectId);
+        allow get: if isOwner(userId) && isValidId(projectId) && isValidId(lineId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(projectId) &&
+                         isValidId(lineId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'projectId', 'orderIndex', 'speakerName',
+                           'startMs', 'endMs', 'englishText', 'hindiText',
+                           'emotion', 'emotionIntensity', 'voiceGender',
+                           'ageGroup', 'voiceEffect', 'pitchMultiplier',
+                           'speedMultiplier', 'matchOriginalEmotion',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'projectId', 'orderIndex', 'speakerName',
+                           'startMs', 'endMs', 'englishText', 'hindiText',
+                           'emotion', 'emotionIntensity', 'voiceGender',
+                           'ageGroup', 'voiceEffect', 'pitchMultiplier',
+                           'speedMultiplier', 'matchOriginalEmotion',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidDubLine(incoming(), userId, projectId) &&
+                         existsAfter(/databases/$(database)/documents/users/$(userId)/projects/$(projectId));
+
+        allow update: if isOwner(userId) &&
+                         isValidId(projectId) &&
+                         isValidId(lineId) &&
+                         isValidDubLine(incoming(), userId, projectId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().projectId == existing().projectId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'orderIndex', 'speakerName', 'startMs', 'endMs',
+                           'englishText', 'hindiText', 'emotion', 'emotionIntensity',
+                           'voiceGender', 'ageGroup', 'voiceEffect', 'pitchMultiplier',
+                           'speedMultiplier', 'matchOriginalEmotion', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(projectId) && isValidId(lineId);
+      }
+    }
+  }
+}

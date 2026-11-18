@@ -1,0 +1,8 @@
+{
+  "name": "Remix SwarDub",
+  "description": "AI-powered English to Hindi movie dubbing studio with character voice modulation and timeline sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

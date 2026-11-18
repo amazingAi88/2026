@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">SwarDub</string>
+    <string name="tagline_hindi">अंग्रेज़ी फ़िल्मों को अपनी पसंदीदा आवाज़ में हिन्दी डब करें</string>
+    <string name="tagline_english">AI English-to-Hindi Movie Dubbing &amp; Voice Studio</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="projects_title">SwarDub Studio</string>
+    <string name="new_project_cta">नया डबिंग प्रोजेक्ट (New Dub)</string>
+    <string name="empty_projects_title">कोई डबिंग प्रोजेक्ट नहीं है</string>
+    <string name="empty_projects_subtitle">कोई अंग्रेज़ी वीडियो क्लिप चुनें या संवाद लिखें — AI उसे हिन्दी में बदलकर आवाज़ देगी।</string>
+    <string name="pick_video_label">मूवी / वीडियो चुनें (Pick Video)</string>
+    <string name="pick_audio_label">ऑडियो क्लिप चुनें (Pick Audio)</string>
+    <string name="paste_script_label">स्क्रिप्ट से डब करें (AI Script Dub)</string>
+    <string name="voice_style_section">हिन्दी आवाज़ स्टाइल (Voice Style &amp; Changer)</string>
+    <string name="match_emotion_title">मूल कलाकार के भाव से मिलाएँ</string>
+    <string name="match_emotion_subtitle">Match original actor\'s emotional tone, pace &amp; energy</string>
+    <string name="error_generic">कुछ गड़बड़ हुई। कृपया पुनः प्रयास करें।</string>
+</resources>
